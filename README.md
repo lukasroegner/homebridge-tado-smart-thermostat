@@ -13,6 +13,7 @@ Each zone in the Tado app is exposed to HomeKit as a thermostat with the followi
 * Target temperature
 * Current humidity
 * Battery warning
+* Window state: CLOSED, OPEN (only visible if the open window detection is enabled for the zone)
 
 ## Installation
 
