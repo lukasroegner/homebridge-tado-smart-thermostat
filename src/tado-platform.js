@@ -2,6 +2,7 @@
 const Tado = require('node-tado-client');
 
 const TadoHeatingZone = require('./tado-heating-zone');
+const TadoApi = require('./tado-api');
 
 /**
  * Initializes a new platform instance for the Tado plugin.
@@ -31,6 +32,7 @@ function TadoPlatform(log, config, api) {
     platform.log = log;
     platform.config = config;
     platform.zones = [];
+    platform.apiZones = [];
     platform.accessories = [];
 
     // Initializes the configuration
@@ -40,6 +42,9 @@ function TadoPlatform(log, config, api) {
     platform.config.switchToAutoInNextTimeBlock = platform.config.switchToAutoInNextTimeBlock || false;
     platform.config.zoneUpdateInterval = platform.config.zoneUpdateInterval || 3600;
     platform.config.stateUpdateInterval = platform.config.stateUpdateInterval || 60;
+    platform.config.isApiEnabled = platform.config.isApiEnabled || false;
+    platform.config.apiPort = platform.config.apiPort || 40810;
+    platform.config.apiToken = platform.config.apiToken || null;
 
     // Checks whether the API object is available
     if (!api) {
@@ -77,6 +82,7 @@ function TadoPlatform(log, config, api) {
 
                 // Gets the zones of the home
                 platform.client.getZones(platform.home.id).then(function(apiZones) {
+                    platform.apiZones = apiZones;
 
                     // Creates the zones
                     for (let i = 0; i < apiZones.length; i++) {
@@ -89,7 +95,7 @@ function TadoPlatform(log, config, api) {
 
                         // Adds the heating zone
                         if (apiZone.type === 'HEATING') {
-                            platform.log('Create heating zone with ID ' + apiZone.id + '.');
+                            platform.log('Create heating zone with ID ' + apiZone.id + ' and name ' + apiZone.name + '.');
                             const zone = new TadoHeatingZone(platform, apiZone);
                             platform.zones.push(zone);
                         }
@@ -114,6 +120,7 @@ function TadoPlatform(log, config, api) {
                     // Starts the timer for updating zones
                     setInterval(function() {
                         platform.client.getZones(platform.home.id).then(function(apiZones) {
+                            platform.apiZones = apiZones;
                             for (let i = 0; i < platform.zones.length; i++) {
                                 const zone = platform.zones[i];
                                 zone.updateZone(apiZones);
@@ -122,6 +129,11 @@ function TadoPlatform(log, config, api) {
                             platform.log('Error while getting zones.');
                         });
                     }, platform.config.zoneUpdateInterval * 1000);
+
+                    // Starts the API if requested
+                    if (platform.config.isApiEnabled) {
+                        platform.tadoApi = new TadoApi(platform);
+                    }
                 }, function() {
                     platform.log('Error while getting zones.');
                 });
