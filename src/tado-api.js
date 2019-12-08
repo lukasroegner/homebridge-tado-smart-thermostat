@@ -229,13 +229,13 @@ TadoApi.prototype.handlePostZone = function (endpoint, body, response) {
                     if (apiZone.state.setting.temperature) {
                         promises.push(api.platform.client.setZoneOverlay(api.platform.home.id, apiZone.id, 'on', apiZone.state.setting.temperature.celsius, api.platform.config.switchToAutoInNextTimeBlock ? 'auto' : 'manual'));
                     } else {
-                        promises.push(api.platform.client.setZoneOverlay(api.platform.home.id, apiZone.id, 'on', 5, platform.config.switchToAutoInNextTimeBlock ? 'auto' : 'manual'));
+                        promises.push(api.platform.client.setZoneOverlay(api.platform.home.id, apiZone.id, 'on', 5, api.platform.config.switchToAutoInNextTimeBlock ? 'auto' : 'manual'));
                     }
                 } else if (zonePropertyValue == 'off') {
                     if (apiZone.state.setting.temperature) {
                         promises.push(api.platform.client.setZoneOverlay(api.platform.home.id, apiZone.id, 'off', apiZone.state.setting.temperature.celsius, api.platform.config.switchToAutoInNextTimeBlock ? 'auto' : 'manual'));
                     } else {
-                        promises.push(api.platform.client.setZoneOverlay(api.platform.home.id, apiZone.id, 'off', 5, platform.config.switchToAutoInNextTimeBlock ? 'auto' : 'manual'));
+                        promises.push(api.platform.client.setZoneOverlay(api.platform.home.id, apiZone.id, 'off', 5, api.platform.config.switchToAutoInNextTimeBlock ? 'auto' : 'manual'));
                     }
                 }
                 break;
