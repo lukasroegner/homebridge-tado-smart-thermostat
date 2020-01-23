@@ -1,6 +1,6 @@
 {
   "name": "homebridge-tado",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Plugin for using Tado devices in homebridge.",
   "license": "MIT",
   "keywords": [

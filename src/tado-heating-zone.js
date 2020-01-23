@@ -123,7 +123,7 @@ function TadoHeatingZone(platform, apiZone) {
                 // Updates the state
                 zone.updateState();
             }, function() {
-                platform.log(device.uniqueId + ' - Failed to switch target state to OFF');
+                platform.log(zone.id + ' - Failed to switch target state to OFF');
             });
         }
 
@@ -135,7 +135,7 @@ function TadoHeatingZone(platform, apiZone) {
                 // Updates the state
                 zone.updateState();
             }, function() {
-                platform.log(device.uniqueId + ' - Failed to switch target state to HEATING');
+                platform.log(zone.id + ' - Failed to switch target state to HEATING');
             });
         }
 
@@ -147,7 +147,7 @@ function TadoHeatingZone(platform, apiZone) {
                 // Updates the state
                 zone.updateState();
             }, function() {
-                platform.log(device.uniqueId + ' - Failed to switch target state to AUTO');
+                platform.log(zone.id + ' - Failed to switch target state to AUTO');
             });
         }
 
@@ -165,7 +165,7 @@ function TadoHeatingZone(platform, apiZone) {
             // Updates the state
             zone.updateState();
         }, function() {
-            platform.log(device.uniqueId + ' - Failed to set target temperature to ' + value);
+            platform.log(zone.id + ' - Failed to set target temperature to ' + value);
         });
 
         // Performs the callback
