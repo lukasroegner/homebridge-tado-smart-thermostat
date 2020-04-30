@@ -15,6 +15,8 @@ Each zone in the Tado app is exposed to HomeKit as a thermostat with the followi
 * Battery warning
 * Window state: CLOSED, OPEN (only visible if the open window detection is enabled for the zone)
 
+It is also possible to expose occupancy sensors for all Tado users.
+
 ## Installation
 
 Install the plugin via npm:
@@ -33,9 +35,11 @@ npm install https://github.com/lukasroegner/homebridge-tado.git -g
             "username": "<YOUR-USER-NAME>",
             "password": "<YOUR-PASSWORD>",
             "homeName": "<YOUR-HOME-NAME>",
+            "areOccupancySensorsEnabled": false,
             "switchToAutoInNextTimeBlock": false,
             "zoneUpdateInterval": 3600,
             "stateUpdateInterval": 60,
+            "occupancyUpdateInterval": 60,
             "isApiEnabled": false,
             "apiPort": 40810,
             "apiToken": "<YOUR-TOKEN>"
@@ -50,11 +54,15 @@ npm install https://github.com/lukasroegner/homebridge-tado.git -g
 
 **homeName**: The name of the home you want to expose to HomeKit as written in the Tado app.
 
+**areOccupancySensorsEnabled** (optional): Determines whether occupancy sensors are exposed for the Tado users. Defaults to `false`.
+
 **switchToAutoInNextTimeBlock** (optional): If set to `true`, the state of the zone is switch back to AUTO in the next time block of the time table (same behavior as the zone setting for manual changes on the device itself). Defaults to `false`.
 
 **zoneUpdateInterval** (optional): The polling interval in seconds, at which the zone is updated (used for battery state updates). Defaults to 1 hour.
 
 **stateUpdateInterval** (optional): The polling interval in seconds, at which the state of a thermostat is updated. Defaults to 60 seconds.
+
+**occupancyUpdateInterval** (optional): The polling interval in seconds, at which the state of the occupancy sensors is updated. Only used when `areOccupancySensorsEnabled` is set to `true`. Defaults to 60 seconds.
 
 **isApiEnabled** (optional): Enables an HTTP API for controlling Tado zones. Defaults to `false`. See **API** for more information.
 

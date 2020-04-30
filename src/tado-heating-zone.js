@@ -221,7 +221,7 @@ TadoHeatingZone.prototype.updateZone = function (apiZones) {
     const zone = this;
     const { Characteristic } = zone.platform;
 
-    // Gets the light that is used in this light bulb device
+    // Gets the zone that this instance represents
     const apiZone = apiZones.find(function(z) { return z.id === zone.id; });
 
     // Updates the battery state

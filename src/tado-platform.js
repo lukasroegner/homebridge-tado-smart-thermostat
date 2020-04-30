@@ -2,6 +2,7 @@
 const Tado = require('node-tado-client');
 
 const TadoHeatingZone = require('./tado-heating-zone');
+const TadoMobileDevice = require('./tado-mobile-device');
 const TadoApi = require('./tado-api');
 
 /**
@@ -33,6 +34,8 @@ function TadoPlatform(log, config, api) {
     platform.config = config;
     platform.zones = [];
     platform.apiZones = [];
+    platform.mobileDevices = [];
+    platform.apiMobileDevices = [];
     platform.accessories = [];
 
     // Initializes the configuration
@@ -42,6 +45,7 @@ function TadoPlatform(log, config, api) {
     platform.config.switchToAutoInNextTimeBlock = platform.config.switchToAutoInNextTimeBlock || false;
     platform.config.zoneUpdateInterval = platform.config.zoneUpdateInterval || 3600;
     platform.config.stateUpdateInterval = platform.config.stateUpdateInterval || 60;
+    platform.config.occupancyUpdateInterval = platform.config.occupancyUpdateInterval || 60;
     platform.config.isApiEnabled = platform.config.isApiEnabled || false;
     platform.config.apiPort = platform.config.apiPort || 40810;
     platform.config.apiToken = platform.config.apiToken || null;
@@ -72,6 +76,7 @@ function TadoPlatform(log, config, api) {
         // Performs the login
         platform.client.login(platform.config.username, platform.config.password).then(function () {
             platform.client.getMe().then(function (me) {
+                const promises = [];
 
                 // Checks if the home has been found
                 platform.home = me.homes.find(function(h) { return h.name === platform.config.homeName; });
@@ -81,7 +86,7 @@ function TadoPlatform(log, config, api) {
                 }
 
                 // Gets the zones of the home
-                platform.client.getZones(platform.home.id).then(function(apiZones) {
+                promises.push(platform.client.getZones(platform.home.id).then(function(apiZones) {
                     platform.apiZones = apiZones;
 
                     // Creates the zones
@@ -101,16 +106,6 @@ function TadoPlatform(log, config, api) {
                         }
                     }
 
-                    // Removes the accessories that are not bound to a zone
-                    let unusedAccessories = platform.accessories.filter(function(a) { return !platform.zones.some(function(z) { return z.id === a.context.id; }); });
-                    for (let i = 0; i < unusedAccessories.length; i++) {
-                        const unusedAccessory = unusedAccessories[i];
-                        platform.log('Removing accessory with zone ID ' + unusedAccessory.context.id + ' and kind ' + unusedAccessory.context.kind + '.');
-                        platform.accessories.splice(platform.accessories.indexOf(unusedAccessory), 1);
-                    }
-                    platform.api.unregisterPlatformAccessories(platform.pluginName, platform.platformName, unusedAccessories);
-                    platform.log('Initialization completed.');
-
                     // Initially updates the zones
                     for (let i = 0; i < platform.zones.length; i++) {
                         const zone = platform.zones[i];
@@ -129,13 +124,72 @@ function TadoPlatform(log, config, api) {
                             platform.log('Error while getting zones.');
                         });
                     }, platform.config.zoneUpdateInterval * 1000);
+                }, function() {
+                    platform.log('Error while getting zones.');
+                }));
+
+                // Adds the occupancy sensors
+                if (platform.config.areOccupancySensorsEnabled) {
+                    promises.push(platform.client.getMobileDevices(platform.home.id).then(function(apiMobileDevices) {
+                        platform.apiMobileDevices = apiMobileDevices;
+
+                        // Creates the mobile devices
+                        for (let i = 0; i < apiMobileDevices.length; i++) {
+                            const apiMobileDevice = apiMobileDevices[i];
+
+                            // Checks if the mobile device is geo-fence enabled
+                            if (!apiMobileDevice.settings || !apiMobileDevice.settings.geoTrackingEnabled) {
+                                continue;
+                            }
+
+                            // Adds the mobile device
+                            platform.log('Create mobile device with ID ' + apiMobileDevice.id + ' and name ' + apiMobileDevice.name + '.');
+                            const mobileDevice = new TadoMobileDevice(platform, apiMobileDevice);
+                            platform.mobileDevices.push(mobileDevice);
+                        }
+
+                        // Initially updates the mobile devices
+                        for (let i = 0; i < platform.mobileDevices.length; i++) {
+                            const mobileDevice = platform.mobileDevices[i];
+                            mobileDevice.updateMobileDevice(apiMobileDevices);
+                        }
+
+                        // Starts the timer for updating mobile devices
+                        setInterval(function() {
+                            platform.client.getMobileDevices(platform.home.id).then(function(apiMobileDevices) {
+                                platform.apiMobileDevices = apiMobileDevices;
+                                for (let i = 0; i < platform.mobileDevices.length; i++) {
+                                    const mobileDevice = platform.mobileDevices[i];
+                                    mobileDevice.updateMobileDevice(apiMobileDevices);
+                                }
+                            }, function() {
+                                platform.log('Error while getting mobile devices.');
+                            });
+                        }, platform.config.occupancyUpdateInterval * 1000);
+                    }, function() {
+                        platform.log('Error while getting mobile devices.');
+                    }));
+                }
+
+                // Removes unused accessories
+                Promise.all(promises).then(function() {
+
+                    // Removes the accessories that are not bound to a zone
+                    let unusedAccessories = platform.accessories.filter(function(a) { return !platform.zones.some(function(z) { return z.id === a.context.id; }) && !platform.mobileDevices.some(function(m) { return m.id === a.context.id; }); });
+                    for (let i = 0; i < unusedAccessories.length; i++) {
+                        const unusedAccessory = unusedAccessories[i];
+                        platform.log('Removing accessory with ID ' + unusedAccessory.context.id + ' and kind ' + unusedAccessory.context.kind + '.');
+                        platform.accessories.splice(platform.accessories.indexOf(unusedAccessory), 1);
+                    }
+                    platform.api.unregisterPlatformAccessories(platform.pluginName, platform.platformName, unusedAccessories);
+                    platform.log('Initialization completed.');
 
                     // Starts the API if requested
                     if (platform.config.isApiEnabled) {
                         platform.tadoApi = new TadoApi(platform);
                     }
                 }, function() {
-                    platform.log('Error while getting zones.');
+                    platform.log('Initialization could not be completed due to an error.');
                 });
             }, function() {
                 platform.log('Error while getting the account data.');
