@@ -21,7 +21,7 @@ function TadoPlatform(log, config, api) {
     platform.Characteristic = api.hap.Characteristic;
     platform.UUIDGen = api.hap.uuid;
     platform.hap = api.hap;
-    platform.pluginName = 'homebridge-tado';
+    platform.pluginName = 'homebridge-tado-smart-thermostat';
     platform.platformName = 'TadoPlatform';
 
     // Checks whether a configuration is provided, otherwise the plugin should not be initialized

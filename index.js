@@ -6,5 +6,5 @@ const TadoPlatform = require('./src/tado-platform');
  * @param homebridge The homebridge API that contains all classes, objects and functions for communicating with HomeKit.
  */
 module.exports = function (homebridge) {
-    homebridge.registerPlatform('homebridge-tado', 'TadoPlatform', TadoPlatform, true);
+    homebridge.registerPlatform('homebridge-tado-smart-thermostat', 'TadoPlatform', TadoPlatform, true);
 }

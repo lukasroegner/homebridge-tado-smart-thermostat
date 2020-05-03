@@ -1,4 +1,4 @@
-# homebridge-tado
+# homebridge-tado-smart-thermostat
 
 This project is a homebridge plugin for Tado heating devices. Each zone (i.e. room) in the Tado app is exposed to HomeKit as a thermostat.
 
@@ -22,7 +22,7 @@ It is also possible to expose occupancy sensors for all Tado users.
 Install the plugin via npm:
 
 ```bash
-npm install https://github.com/lukasroegner/homebridge-tado.git -g
+npm install -g homebridge-tado-smart-thermostat
 ```
 
 ## Configuration
