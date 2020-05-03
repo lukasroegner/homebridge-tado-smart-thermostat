@@ -52,7 +52,7 @@ npm install -g homebridge-tado-smart-thermostat
 
 **password**: The password that you use for the app and the web app of Tado.
 
-**homeName**: The name of the home you want to expose to HomeKit as written in the Tado app.
+**homeName**: The name of the home you want to expose to HomeKit as written in the Tado app. Has to be the exact same name as in the web app of Tado.
 
 **areOccupancySensorsEnabled** (optional): Determines whether occupancy sensors are exposed for the Tado users. Defaults to `false`.
 

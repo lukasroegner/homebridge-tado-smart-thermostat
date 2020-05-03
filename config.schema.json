@@ -1,0 +1,79 @@
+{
+    "pluginAlias": "TadoPlatform",
+    "pluginType": "platform",
+    "headerDisplay": "This project is a homebridge plugin for Tado heating devices. Each zone (i.e. room) in the Tado app is exposed to HomeKit as a thermostat.",
+    "footerDisplay": "For help please visit the [GitHub repository](https://github.com/lukasroegner/homebridge-tado-smart-thermostat).",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "username": {
+                "title": "Username",
+                "type": "string",
+                "required": true,
+                "placeholder": "YOUR-USER-NAME",
+                "format": "email",
+                "description": "The user name that you use for the app and the web app of Tado."
+            },
+            "password": {
+                "title": "Password",
+                "type": "string",
+                "placeholder": "YOUR-PASSWORD",
+                "required": true,
+                "description": "The password that you use for the app and the web app of Tado."
+            },
+            "homeName": {
+                "title": "Home Name",
+                "type": "string",
+                "placeholder": "YOUR-HOME-NAME",
+                "required": true,
+                "description": "The name of the home you want to expose to HomeKit as written in the Tado app. Has to be the exact same name as in the web app of Tado."
+            },
+            "areOccupancySensorsEnabled": {
+                "title": "Occupancy Sensors",
+                "type": "boolean",
+                "default": false,
+                "description": "Determines whether occupancy sensors are exposed for the Tado users."
+            },
+            "switchToAutoInNextTimeBlock": {
+                "title": "Auto in Next Time Block",
+                "type": "boolean",
+                "default": false,
+                "description": "If enabled, the state of the zone is switch back to AUTO in the next time block of the time table (same behavior as the zone setting for manual changes on the device itself)."
+            },
+            "zoneUpdateInterval": {
+                "title": "Zone Update Interval",
+                "type": "integer",
+                "placeholder": "3600",
+                "description": "The polling interval in seconds, at which the zone is updated (used for battery state updates). Defaults to 1 hour."
+            },
+            "stateUpdateInterval": {
+                "title": "State Update Interval",
+                "type": "integer",
+                "placeholder": "60",
+                "description": "The polling interval in seconds, at which the state of a thermostat is updated. Defaults to 60 seconds."
+            },
+            "occupancyUpdateInterval": {
+                "title": "Occupancy Update Interval",
+                "type": "integer",
+                "placeholder": "60",
+                "description": "The polling interval in seconds, at which the state of the occupancy sensors is updated. Only used when occupancy sensors are enabled. Defaults to 60 seconds."
+            },
+            "isApiEnabled": {
+              "type": "boolean",
+              "title": "Enable API",
+              "description": "Enables an HTTP API for controlling Tado zones. See API for more information."
+            },
+            "apiPort": {
+              "type": "integer",
+              "title": "API Port",
+              "placeholder": "40810",
+              "description": "The port that the API (if enabled) runs on. Defaults to 40810, please change this setting of the port is already in use."
+            },
+            "apiToken": {
+              "type": "string",
+              "title": "API Token",
+              "description": "The token that has to be included in each request of the API. Is required if the API is enabled and has no default value."
+            }
+        }
+    }
+}
