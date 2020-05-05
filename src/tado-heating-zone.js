@@ -190,9 +190,9 @@ TadoHeatingZone.prototype.updateState = function () {
     zone.platform.client.getZoneState(zone.platform.home.id, zone.id).then(function(state) {
         const apiZone = zone.platform.apiZones.find(function(z) { return z.id === zone.id; });
         apiZone.state = state;
-        
+
         // Updates the current states
-        zone.thermostatService.updateCharacteristic(Characteristic.CurrentHeatingCoolingState, state.setting.power === 'ON' && state.setting.temperature && state.sensorDataPoints.insideTemperature.celsius < state.setting.temperature.celsius ? 1 : 0);
+        zone.thermostatService.updateCharacteristic(Characteristic.CurrentHeatingCoolingState, state.setting.power === 'ON' && state.activityDataPoints.heatingPower && state.activityDataPoints.heatingPower.percentage > 0 ? 1 : 0);
         zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, !state.overlayType ? 3 : (state.setting.power === 'ON' ? 1 : 0));
         
         // Updates the temperatures
