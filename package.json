@@ -1,6 +1,6 @@
 {
   "name": "homebridge-tado-smart-thermostat",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "Plugin for using Tado devices in homebridge.",
   "license": "MIT",
   "keywords": [
@@ -10,7 +10,7 @@
     "tado"
   ],
   "dependencies": {
-    "node-tado-client": "0.3.0"
+    "node-tado-client": "0.8.0"
   },
   "repository": {
     "type": "git",

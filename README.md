@@ -15,7 +15,9 @@ Each zone in the Tado app is exposed to HomeKit as a thermostat with the followi
 * Battery warning
 * Window state: CLOSED, OPEN (only visible if the open window detection is enabled for the zone)
 
-It is also possible to expose occupancy sensors for all Tado users.
+Global features:
+* Possibility to expose occupancy sensors for all Tado users
+* Possibility to expose the global Home/Away state as occupancy sensor with security system settings 
 
 ## Installation
 
@@ -36,10 +38,12 @@ npm install -g homebridge-tado-smart-thermostat
             "password": "<YOUR-PASSWORD>",
             "homeName": "<YOUR-HOME-NAME>",
             "areOccupancySensorsEnabled": false,
+            "isGlobalHomeAwayEnabled": false,
             "switchToAutoInNextTimeBlock": false,
             "zoneUpdateInterval": 3600,
             "stateUpdateInterval": 60,
             "occupancyUpdateInterval": 60,
+            "homeUpdateInterval": 60,
             "isApiEnabled": false,
             "apiPort": 40810,
             "apiToken": "<YOUR-TOKEN>"
@@ -56,6 +60,8 @@ npm install -g homebridge-tado-smart-thermostat
 
 **areOccupancySensorsEnabled** (optional): Determines whether occupancy sensors are exposed for the Tado users. Defaults to `false`.
 
+**isGlobalHomeAwayEnabled** (optional): Determines whether the global Home/Away state is exposed as occupancy sensor with security system settings to HomeKit. Defaults to `false`.
+
 **switchToAutoInNextTimeBlock** (optional): If set to `true`, the state of the zone is switch back to AUTO in the next time block of the time table (same behavior as the zone setting for manual changes on the device itself). Defaults to `false`.
 
 **zoneUpdateInterval** (optional): The polling interval in seconds, at which the zone is updated (used for battery state updates). Defaults to 1 hour.
@@ -63,6 +69,8 @@ npm install -g homebridge-tado-smart-thermostat
 **stateUpdateInterval** (optional): The polling interval in seconds, at which the state of a thermostat is updated. Defaults to 60 seconds.
 
 **occupancyUpdateInterval** (optional): The polling interval in seconds, at which the state of the occupancy sensors is updated. Only used when `areOccupancySensorsEnabled` is set to `true`. Defaults to 60 seconds.
+
+**homeUpdateInterval** (optional): The polling interval in seconds, at which the state of the home is updated. Only used when `isGlobalHomeAwayEnabled` is set to `true`. Defaults to 60 seconds.
 
 **isApiEnabled** (optional): Enables an HTTP API for controlling Tado zones. Defaults to `false`. See **API** for more information.
 

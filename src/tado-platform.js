@@ -3,6 +3,7 @@ const Tado = require('node-tado-client');
 
 const TadoHeatingZone = require('./tado-heating-zone');
 const TadoMobileDevice = require('./tado-mobile-device');
+const TadoHomeDevice = require('./tado-home-device');
 const TadoApi = require('./tado-api');
 
 /**
@@ -36,6 +37,7 @@ function TadoPlatform(log, config, api) {
     platform.apiZones = [];
     platform.mobileDevices = [];
     platform.apiMobileDevices = [];
+    platform.homeDevice = null;
     platform.accessories = [];
 
     // Initializes the configuration
@@ -46,6 +48,7 @@ function TadoPlatform(log, config, api) {
     platform.config.zoneUpdateInterval = platform.config.zoneUpdateInterval || 3600;
     platform.config.stateUpdateInterval = platform.config.stateUpdateInterval || 60;
     platform.config.occupancyUpdateInterval = platform.config.occupancyUpdateInterval || 60;
+    platform.config.homeUpdateInterval = platform.config.homeUpdateInterval || 60;
     platform.config.isApiEnabled = platform.config.isApiEnabled || false;
     platform.config.apiPort = platform.config.apiPort || 40810;
     platform.config.apiToken = platform.config.apiToken || null;
@@ -171,11 +174,42 @@ function TadoPlatform(log, config, api) {
                     }));
                 }
 
+                // Adds the home device
+                if (platform.config.isGlobalHomeAwayEnabled) {
+                    promises.push(platform.client.getHome(platform.home.id).then(function(apiHome) {
+
+                        // Adds the home device
+                        platform.log('Create home device with ID ' + apiHome.id + ' and name ' + apiHome.name + '.');
+                        platform.homeDevice = new TadoHomeDevice(platform, apiHome);
+
+                        // Initially updates the home
+                        platform.client.getState(platform.home.id).then(function(apiState) {
+                            platform.homeDevice.updateHomeDevice(apiState);
+                        }, function() {
+                            platform.log('Error while getting home.');
+                        });
+
+                        // Starts the timer for updating the home device
+                        setInterval(function() {
+                            platform.client.getState(platform.home.id).then(function(apiState) {
+                                platform.homeDevice.updateHomeDevice(apiState);
+                            }, function() {
+                                platform.log('Error while getting home.');
+                            });
+                        }, platform.config.homeUpdateInterval * 1000);
+                    }, function() {
+                        platform.log('Error while getting home.');
+                    }));
+                }
+
                 // Removes unused accessories
                 Promise.all(promises).then(function() {
 
                     // Removes the accessories that are not bound to a zone
                     let unusedAccessories = platform.accessories.filter(function(a) { return !platform.zones.some(function(z) { return z.id === a.context.id; }) && !platform.mobileDevices.some(function(m) { return m.id === a.context.id; }); });
+                    if (platform.homeDevice) {
+                        unusedAccessories = unusedAccessories.filter(function(a) { return a.context.id !== platform.home.id });
+                    }
                     for (let i = 0; i < unusedAccessories.length; i++) {
                         const unusedAccessory = unusedAccessories[i];
                         platform.log('Removing accessory with ID ' + unusedAccessory.context.id + ' and kind ' + unusedAccessory.context.kind + '.');
