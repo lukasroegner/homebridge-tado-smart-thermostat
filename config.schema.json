@@ -38,7 +38,13 @@
                 "title": "Global Home/Away",
                 "type": "boolean",
                 "default": false,
-                "description": "Determines whether the global Home/Away state is exposed as occupancy sensor with security system settings to HomeKit."
+                "description": "Determines whether the global Home/Away state is exposed as occupancy sensor with controls to HomeKit."
+            },
+            "isAutoAssistEnabled": {
+                "title": "Auto Assist Enabled",
+                "type": "boolean",
+                "default": false,
+                "description": "Determines whether you have the Tado 'Auto-Assist' for automatic geo-fencing booked and enabled. Only used when global Home/Away is enabled."
             },
             "switchToAutoInNextTimeBlock": {
                 "title": "Auto in Next Time Block",

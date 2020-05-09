@@ -17,7 +17,9 @@ Each zone in the Tado app is exposed to HomeKit as a thermostat with the followi
 
 Global features:
 * Possibility to expose occupancy sensors for all Tado users
-* Possibility to expose the global Home/Away state as occupancy sensor with security system settings 
+* Possibility to expose the global Home/Away state as occupancy sensor with controls.
+
+**Hint**: If you want to use the global Home/Away state and settings, make sure to set the Auto-Assist mode correctly in the config. If you have Auto-Assist on, security system controls are added to the occupancy sensor, so that you can set the manual override state (security system states: "At home", "Away") or the auto mode of Tado (security system state: "Off"). If you don't have a Tado subscription with Auto-Assist, a switch is added to the occupancy sensor to set the mode to home (switch state: "On") or away (switch state: "Off").
 
 ## Installation
 
@@ -39,6 +41,7 @@ npm install -g homebridge-tado-smart-thermostat
             "homeName": "<YOUR-HOME-NAME>",
             "areOccupancySensorsEnabled": false,
             "isGlobalHomeAwayEnabled": false,
+            "isAutoAssistEnabled": false,
             "switchToAutoInNextTimeBlock": false,
             "zoneUpdateInterval": 3600,
             "stateUpdateInterval": 60,
@@ -60,7 +63,9 @@ npm install -g homebridge-tado-smart-thermostat
 
 **areOccupancySensorsEnabled** (optional): Determines whether occupancy sensors are exposed for the Tado users. Defaults to `false`.
 
-**isGlobalHomeAwayEnabled** (optional): Determines whether the global Home/Away state is exposed as occupancy sensor with security system settings to HomeKit. Defaults to `false`.
+**isGlobalHomeAwayEnabled** (optional): Determines whether the global Home/Away state is exposed as occupancy sensor with controls to HomeKit. Defaults to `false`.
+
+**isAutoAssistEnabled** (optional): Determines whether you have the Tado "Auto-Assist" for automatic geo-fencing booked and enabled. Only used when `isGlobalHomeAwayEnabled` is set to `true`. Defaults to `false`.
 
 **switchToAutoInNextTimeBlock** (optional): If set to `true`, the state of the zone is switch back to AUTO in the next time block of the time table (same behavior as the zone setting for manual changes on the device itself). Defaults to `false`.
 
