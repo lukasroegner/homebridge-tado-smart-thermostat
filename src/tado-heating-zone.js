@@ -209,6 +209,7 @@ TadoHeatingZone.prototype.updateState = function () {
             zone.contactSensorService.updateCharacteristic(Characteristic.ContactSensorState, !!state.openWindow);
         }
         zone.platform.log.debug(zone.id + ' - Updated state.');
+        zone.platform.log.debug(zone.id + ' - new state: ' + JSON.stringify(state));
     }, function() {
         zone.platform.log(zone.id + ' - Error getting state from API.');
     });
