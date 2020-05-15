@@ -191,9 +191,15 @@ TadoHeatingZone.prototype.updateState = function () {
         const apiZone = zone.platform.apiZones.find(function(z) { return z.id === zone.id; });
         apiZone.state = state;
 
-        // Updates the current states
+        // Updates the current state
         zone.thermostatService.updateCharacteristic(Characteristic.CurrentHeatingCoolingState, state.setting.power === 'ON' && state.activityDataPoints.heatingPower && state.activityDataPoints.heatingPower.percentage > 0 ? 1 : 0);
-        zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, !state.overlayType ? 3 : (state.setting.power === 'ON' ? 1 : 0));
+        
+        // Updates the target state
+        if (zone.platform.config.isAlternativeStateLogicEnabled) {
+            zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, state.setting.power === 'ON' ? (!state.overlayType ? 3 : 1) : 0);
+        } else {
+            zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, !state.overlayType ? 3 : (state.setting.power === 'ON' ? 1 : 0));
+        }
         
         // Updates the temperatures
         zone.thermostatService.updateCharacteristic(Characteristic.CurrentTemperature, state.sensorDataPoints.insideTemperature.celsius);

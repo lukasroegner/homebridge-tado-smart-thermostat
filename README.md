@@ -43,6 +43,7 @@ npm install -g homebridge-tado-smart-thermostat
             "isGlobalHomeAwayEnabled": false,
             "isAutoAssistEnabled": false,
             "switchToAutoInNextTimeBlock": false,
+            "isAlternativeStateLogicEnabled": false,
             "zoneUpdateInterval": 3600,
             "stateUpdateInterval": 60,
             "occupancyUpdateInterval": 60,
@@ -68,6 +69,8 @@ npm install -g homebridge-tado-smart-thermostat
 **isAutoAssistEnabled** (optional): Determines whether you have the Tado "Auto-Assist" for automatic geo-fencing booked and enabled. Only used when `isGlobalHomeAwayEnabled` is set to `true`. Defaults to `false`.
 
 **switchToAutoInNextTimeBlock** (optional): If set to `true`, the state of the zone is switch back to AUTO in the next time block of the time table (same behavior as the zone setting for manual changes on the device itself). Defaults to `false`.
+
+**isAlternativeStateLogicEnabled** (optional): If set to `true`, a different logic is used for displaying the target state of the thermostate (AUTO, HEAT, OFF). This alternative logic shows the target state as OFF if the thermostat is set to OFF by Tado automation. Defaults to `false`.
 
 **zoneUpdateInterval** (optional): The polling interval in seconds, at which the zone is updated (used for battery state updates). Defaults to 1 hour.
 

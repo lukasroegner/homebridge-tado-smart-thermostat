@@ -52,6 +52,12 @@
                 "default": false,
                 "description": "If enabled, the state of the zone is switch back to AUTO in the next time block of the time table (same behavior as the zone setting for manual changes on the device itself)."
             },
+            "isAlternativeStateLogicEnabled": {
+                "title": "Alternative State Logic",
+                "type": "boolean",
+                "default": false,
+                "description": "If enabled, a different logic is used for displaying the target state of the thermostate (AUTO, HEAT, OFF). This alternative logic shows the target state as OFF if the thermostat is set to OFF by Tado automation."
+            },
             "zoneUpdateInterval": {
                 "title": "Zone Update Interval",
                 "type": "integer",
