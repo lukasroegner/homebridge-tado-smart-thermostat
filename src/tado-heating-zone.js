@@ -206,7 +206,7 @@ TadoHeatingZone.prototype.updateState = function () {
 
         // Updates the contact sensor
         if (zone.contactSensorService) {
-            zone.contactSensorService.updateCharacteristic(Characteristic.ContactSensorState, !!state.openWindow);
+            zone.contactSensorService.updateCharacteristic(Characteristic.ContactSensorState, !!state.openWindow || !!state.openWindowDetected);
         }
         zone.platform.log.debug(zone.id + ' - Updated state.');
         zone.platform.log.debug(zone.id + ' - new state: ' + JSON.stringify(state));
