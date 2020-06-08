@@ -51,9 +51,13 @@ npm install -g homebridge-tado-smart-thermostat
             "isApiEnabled": false,
             "apiPort": 40810,
             "apiToken": "<YOUR-TOKEN>"
-        }
-    ]
-}
+            "zones": [
+                {
+                    "zoneId": <YOUR-ZONE-ID>,
+                    "zoneName": "<YOUR-ZONE-NAME>",
+                    "terminationOption": "auto"
+                }]
+    }
 ```
 
 **username**: The user name that you use for the app and the web app of Tado.
@@ -85,6 +89,8 @@ npm install -g homebridge-tado-smart-thermostat
 **apiPort** (optional): The port that the API (if enabled) runs on. Defaults to `40810`, please change this setting of the port is already in use.
 
 **apiToken** (optional): The token that has to be included in each request of the API. Is required if the API is enabled and has no default value.
+
+**zones** (optional): if you wish to override the switchToAutoInNextTimeBlock for a particular zone, add each zone by ID and with terminationOption of auto, manual or the number of minutes the change should last. Zone Name is purely for readability.
 
 ## API
 
