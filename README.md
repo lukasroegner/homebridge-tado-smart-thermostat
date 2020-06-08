@@ -50,7 +50,7 @@ npm install -g homebridge-tado-smart-thermostat
             "homeUpdateInterval": 60,
             "isApiEnabled": false,
             "apiPort": 40810,
-            "apiToken": "<YOUR-TOKEN>"
+            "apiToken": "<YOUR-TOKEN>",
             "zones": [
                 {
                     "zoneId": <YOUR-ZONE-ID>,
