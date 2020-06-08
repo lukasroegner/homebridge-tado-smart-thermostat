@@ -116,6 +116,7 @@ function TadoHeatingZone(platform, apiZone) {
     var terminationOption;
     for (var i = 0; i < platform.config.zones.length; i++){
         if (platform.config.zones[i].zoneId == zone.id){
+            terminationOption = platform.config.zones[i].terminationOption;
             break;
         }
     }
