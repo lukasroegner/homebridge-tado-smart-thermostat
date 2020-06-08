@@ -56,7 +56,8 @@ npm install -g homebridge-tado-smart-thermostat
                     "zoneId": <YOUR-ZONE-ID>,
                     "zoneName": "<YOUR-ZONE-NAME>",
                     "terminationOption": "auto"
-                }]
+                }
+            ]
     }
 ```
 
