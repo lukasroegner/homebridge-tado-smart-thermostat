@@ -90,7 +90,7 @@ npm install -g homebridge-tado-smart-thermostat
 
 **apiToken** (optional): The token that has to be included in each request of the API. Is required if the API is enabled and has no default value.
 
-**zones** (optional): if you wish to override the switchToAutoInNextTimeBlock for a particular zone, add each zone by ID and with terminationOption of auto, manual or the number of minutes the change should last. Zone Name is purely for readability.
+**zones** (optional): If you wish to override the default termination (until next automatic change, until cancelled by user or a timer) for a particular zone, add each zone by ID (IDs are printed in the log during Homebridge startup) with terminationOption of "auto", "manual" or the number of minutes the change should last. Zone Name is purely for readability.
 
 ## API
 
