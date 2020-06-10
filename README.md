@@ -57,10 +57,10 @@ npm install -g homebridge-tado-smart-thermostat
                     "zoneName": "<YOUR-ZONE-NAME>",
                     "terminationOption": "auto"
                 }
-                ]
-            }
             ]
-    }
+        }
+    ]
+}
 ```
 
 **username**: The user name that you use for the app and the web app of Tado.

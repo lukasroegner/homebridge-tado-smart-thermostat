@@ -97,6 +97,34 @@
               "type": "string",
               "title": "API Token",
               "description": "The token that has to be included in each request of the API. Is required if the API is enabled and has no default value."
+            },
+            "zones": {
+                "type": "array",
+                "items": {
+                    "title": "Zone",
+                    "type": "object",
+                    "properties": {
+                        "zoneId": {
+                            "title": "Zone ID",
+                            "type": "integer",
+                            "required": true,
+                            "placeholder": "ZONE-ID",
+                            "description": "The zone IDs of all zones will be printed out in the logs upon startup."
+                        },
+                        "zoneName": {
+                            "title": "Zone Name",
+                            "type": "string",
+                            "required": false,
+                            "default": "ZONE-NAME",
+                            "description": "Useful to remember which zone ID is which zone."
+                        },
+                        "terminationOption": {
+                            "title": "Terminal Option",
+                            "type": "string",
+                            "description": "Can be 'auto', 'manual' or a number representing the number of minutes for the timer."
+                        }
+                    }
+                }
             }
         }
     }

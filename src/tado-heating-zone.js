@@ -113,21 +113,19 @@ function TadoHeatingZone(platform, apiZone) {
     zone.contactSensorService = contactSensorService;
 
     // Sets termination variable from zone config
-    var terminationOption;
-    for (var i = 0; i < platform.config.zones.length; i++){
-        if (platform.config.zones[i].zoneId == zone.id){
+    let terminationOption;
+    for (let i = 0; i < platform.config.zones.length; i++) {
+        if (platform.config.zones[i].zoneId == zone.id) {
             terminationOption = platform.config.zones[i].terminationOption;
             break;
         }
     }
-    var termination = 'manual';
+    let termination = 'manual';
     if (terminationOption == null && platform.config.switchToAutoInNextTimeBlock) {
         termination =  'auto';
-    }
-    else if (!isNaN(parseInt(terminationOption))) {
+    } else if (!isNaN(parseInt(terminationOption))) {
         termination = terminationOption * 60;
-    }
-    else{
+    } else {
         termination = terminationOption;
     }
 
