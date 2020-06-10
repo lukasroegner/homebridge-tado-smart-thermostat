@@ -112,13 +112,32 @@ function TadoHeatingZone(platform, apiZone) {
     // Stores the contact sensor service
     zone.contactSensorService = contactSensorService;
 
+    // Sets termination variable from zone config
+    var terminationOption;
+    for (var i = 0; i < platform.config.zones.length; i++){
+        if (platform.config.zones[i].zoneId == zone.id){
+            terminationOption = platform.config.zones[i].terminationOption;
+            break;
+        }
+    }
+    var termination = 'manual';
+    if (terminationOption == null && platform.config.switchToAutoInNextTimeBlock) {
+        termination =  'auto';
+    }
+    else if (!isNaN(parseInt(terminationOption))) {
+        termination = terminationOption * 60;
+    }
+    else{
+        termination = terminationOption;
+    }
+
     // Subscribes for changes of the target state characteristic
     thermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).on('set', function (value, callback) {
 
         // Sets the state to OFF
         if (!value) {
             platform.log.debug(zone.id + ' - Switch target state to OFF');
-            zone.platform.client.setZoneOverlay(platform.home.id, zone.id, 'off', thermostatService.getCharacteristic(Characteristic.TargetTemperature).value, platform.config.switchToAutoInNextTimeBlock ? 'auto' : 'manual').then(function() {
+            zone.platform.client.setZoneOverlay(platform.home.id, zone.id, 'off', thermostatService.getCharacteristic(Characteristic.TargetTemperature).value, termination).then(function() {
 
                 // Updates the state
                 zone.updateState();
@@ -130,7 +149,7 @@ function TadoHeatingZone(platform, apiZone) {
         // Sets the state to HEATING
         if (value === 1) {
             platform.log.debug(zone.id + ' - Switch target state to HEATING');
-            zone.platform.client.setZoneOverlay(platform.home.id, zone.id, 'on', thermostatService.getCharacteristic(Characteristic.TargetTemperature).value, platform.config.switchToAutoInNextTimeBlock ? 'auto' : 'manual').then(function() {
+            zone.platform.client.setZoneOverlay(platform.home.id, zone.id, 'on', thermostatService.getCharacteristic(Characteristic.TargetTemperature).value, termination).then(function() {
 
                 // Updates the state
                 zone.updateState();
@@ -160,7 +179,7 @@ function TadoHeatingZone(platform, apiZone) {
 
         // Sets the target temperature
         platform.log.debug(zone.id + ' - Set target temperature to ' + value);
-        zone.platform.client.setZoneOverlay(platform.home.id, zone.id, 'on', value, platform.config.switchToAutoInNextTimeBlock ? 'auto' : 'manual').then(function() {
+        zone.platform.client.setZoneOverlay(platform.home.id, zone.id, 'on', value, termination).then(function() {
 
             // Updates the state
             zone.updateState();

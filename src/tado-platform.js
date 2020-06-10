@@ -52,6 +52,7 @@ function TadoPlatform(log, config, api) {
     platform.config.isApiEnabled = platform.config.isApiEnabled || false;
     platform.config.apiPort = platform.config.apiPort || 40810;
     platform.config.apiToken = platform.config.apiToken || null;
+	platform.config.zones = platform.config.zones || [];
 
     // Checks whether the API object is available
     if (!api) {
