@@ -1,7 +1,7 @@
 {
     "pluginAlias": "TadoPlatform",
     "pluginType": "platform",
-    "headerDisplay": "This project is a homebridge plugin for Tado heating devices. Each zone (i.e. room) in the Tado app is exposed to HomeKit as a thermostat.",
+    "headerDisplay": "This project is a homebridge plugin for Tado heating devices. Each zone (i.e. room) in the Tado app is exposed to HomeKit as a thermostat. Each hotwater zone in the Tado app is exposed to HomeKit as a switch.",
     "footerDisplay": "For help please visit the [GitHub repository](https://github.com/lukasroegner/homebridge-tado-smart-thermostat).",
     "schema": {
         "type": "object",

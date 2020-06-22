@@ -92,6 +92,7 @@ function TadoHotWaterZone(platform, apiZone) {
         if (value === true) {
             platform.log.debug(zone.id + ' - Switch target state to HEATING');
             zone.platform.client.setZoneOverlay(platform.home.id, zone.id, 'on', hotWaterService.getCharacteristic(Characteristic.On).value, termination).then(function() {
+                
                 // Updates the state
                 zone.updateState();
             }, function() {
@@ -103,6 +104,7 @@ function TadoHotWaterZone(platform, apiZone) {
         if (value === false) {
             platform.log.debug(zone.id + ' - Switch target state to AUTO');
             zone.platform.client.clearZoneOverlay(platform.home.id, zone.id).then(function() {
+                
                 // Updates the state
                 zone.updateState();
             }, function() {

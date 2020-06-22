@@ -15,7 +15,12 @@ Each zone in the Tado app is exposed to HomeKit as a thermostat with the followi
 * Battery warning
 * Window state: CLOSED, OPEN (only visible if the open window detection is enabled for the zone)
 
-Global features:
+## Hotwater
+
+Each hotwater zone in the Tado app is exposed to HomeKit as a switch.
+
+## Global Features
+
 * Possibility to expose occupancy sensors for all Tado users
 * Possibility to expose the global Home/Away state as occupancy sensor with controls.
 
