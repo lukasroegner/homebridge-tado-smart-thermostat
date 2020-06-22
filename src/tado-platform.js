@@ -1,7 +1,7 @@
-
 const Tado = require('node-tado-client');
 
 const TadoHeatingZone = require('./tado-heating-zone');
+const TadoHotWaterZone = require('./tado-hotwater-zone');
 const TadoMobileDevice = require('./tado-mobile-device');
 const TadoHomeDevice = require('./tado-home-device');
 const TadoApi = require('./tado-api');
@@ -106,6 +106,13 @@ function TadoPlatform(log, config, api) {
                         if (apiZone.type === 'HEATING') {
                             platform.log('Create heating zone with ID ' + apiZone.id + ' and name ' + apiZone.name + '.');
                             const zone = new TadoHeatingZone(platform, apiZone);
+                            platform.zones.push(zone);
+                        }
+                        
+                        // Adds the hot water zone
+                        if (apiZone.type === 'HOT_WATER') {
+                            platform.log('Create hot water zone with ID ' + apiZone.id + ' and name ' + apiZone.name + '.');
+                            const zone = new TadoHotWaterZone(platform, apiZone);
                             platform.zones.push(zone);
                         }
                     }
