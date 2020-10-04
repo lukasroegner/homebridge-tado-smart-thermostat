@@ -114,11 +114,13 @@ The token has to be specified as value of the `Authorization` header on each req
 Authorization: <YOUR-TOKEN>
 ```
 
+You can get the IDs of all zones by looking at Homebridge logs.
+
 ### API - Get values of Tado zone
 
-Use the `zones/<ZONE-NAME>/<PROPERTY-NAME>` endpoint to retrieve a single value of a Tado zone. The HTTP method has to be `GET`:
+Use the `zones/<ZONE-ID>/<PROPERTY-NAME>` endpoint to retrieve a single value of a Tado zone. The HTTP method has to be `GET`:
 ```
-http://<YOUR-HOST-IP-ADDRESS>:<apiPort>/zones/<ZONE-NAME>/<PROPERTY-NAME>
+http://<YOUR-HOST-IP-ADDRESS>:<apiPort>/zones/<ZONE-ID>/<PROPERTY-NAME>
 ```
 
 The response is a plain text response (easier to handle in HomeKit shortcuts), the following property names are supported:
@@ -126,9 +128,9 @@ The response is a plain text response (easier to handle in HomeKit shortcuts), t
 * **target-state** The target state of the zone (possible values: `auto`, `manual`, `off`)
 * **target-temperature** The target temperature of the zone as numeric value (range: `5-25`)
 
-Use the `zones/<ZONE-NAME>` endpoint to retrieve all values of a Tado zone. The HTTP method has to be `GET`:
+Use the `zones/<ZONE-ID>` endpoint to retrieve all values of a Tado zone. The HTTP method has to be `GET`:
 ```
-http://<YOUR-HOST-IP-ADDRESS>:<apiPort>/zones/<ZONE-NAME>
+http://<YOUR-HOST-IP-ADDRESS>:<apiPort>/zones/<ZONE-ID>
 ```
 
 The response is a JSON object containing all values:
@@ -141,9 +143,9 @@ The response is a JSON object containing all values:
 
 ### API - Set values of Tado zone
 
-Use the `zones/<ZONE-NAME>` endpoint to set values of a Tado zone. The HTTP method has to be `POST`:
+Use the `zones/<ZONE-ID>` endpoint to set values of a Tado zone. The HTTP method has to be `POST`:
 ```
-http://<YOUR-HOST-IP-ADDRESS>:<apiPort>/zones/<ZONE-NAME>
+http://<YOUR-HOST-IP-ADDRESS>:<apiPort>/zones/<ZONE-ID>
 ```
 
 The body of the request has to be JSON containing the new values:
