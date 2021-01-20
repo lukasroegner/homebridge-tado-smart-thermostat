@@ -100,8 +100,9 @@ function TadoHomeDevice(platform, apiHome) {
     
                     // Updates the state
                     homeDevice.updateState();
-                }, function() {
+                }, function(e) {
                     platform.log(homeDevice.id + ' - Failed to set presence to HOME');
+                    platform.log.debug(e);
                 });
             }
             if (value == 1) {
@@ -110,8 +111,9 @@ function TadoHomeDevice(platform, apiHome) {
                     
                     // Updates the state
                     homeDevice.updateState();
-                }, function() {
+                }, function(e) {
                     platform.log(homeDevice.id + ' - Failed to set presence to AWAY');
+                    platform.log.debug(e);
                 });
             }
             if (value == 3) {
@@ -120,8 +122,9 @@ function TadoHomeDevice(platform, apiHome) {
                     
                     // Updates the state
                     homeDevice.updateState();
-                }, function() {
+                }, function(e) {
                     platform.log(homeDevice.id + ' - Failed to set presence to AUTO');
+                    platform.log.debug(e);
                 });
             }
     
@@ -150,8 +153,9 @@ function TadoHomeDevice(platform, apiHome) {
     
                     // Updates the state
                     homeDevice.updateState();
-                }, function() {
+                }, function(e) {
                     platform.log(homeDevice.id + ' - Failed to set presence to HOME');
+                    platform.log.debug(e);
                 });
             } else {
                 platform.log.debug(homeDevice.id + ' - Set presence to AWAY');
@@ -159,8 +163,9 @@ function TadoHomeDevice(platform, apiHome) {
                     
                     // Updates the state
                     homeDevice.updateState();
-                }, function() {
+                }, function(e) {
                     platform.log(homeDevice.id + ' - Failed to set presence to AWAY');
+                    platform.log.debug(e);
                 });
             }
     

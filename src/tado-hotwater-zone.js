@@ -95,8 +95,9 @@ function TadoHotWaterZone(platform, apiZone) {
                 
                 // Updates the state
                 zone.updateState();
-            }, function() {
+            }, function(e) {
                 platform.log(zone.id + ' - Failed to switch target state to ON');
+                platform.log.debug(e);
             });
         }
 
@@ -107,8 +108,9 @@ function TadoHotWaterZone(platform, apiZone) {
                 
                 // Updates the state
                 zone.updateState();
-            }, function() {
+            }, function(e) {
                 platform.log(zone.id + ' - Failed to switch target state to OFF');
+                platform.log.debug(e);
             });
         }
 

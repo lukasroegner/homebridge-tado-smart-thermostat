@@ -131,12 +131,14 @@ function TadoPlatform(log, config, api) {
                                 const zone = platform.zones[i];
                                 zone.updateZone(apiZones);
                             }
-                        }, function() {
+                        }, function(e) {
                             platform.log('Error while getting zones.');
+                            platform.log.debug(e);
                         });
                     }, platform.config.zoneUpdateInterval * 1000);
-                }, function() {
+                }, function(e) {
                     platform.log('Error while getting zones.');
+                    platform.log.debug(e);
                 }));
 
                 // Adds the occupancy sensors
@@ -173,12 +175,14 @@ function TadoPlatform(log, config, api) {
                                     const mobileDevice = platform.mobileDevices[i];
                                     mobileDevice.updateMobileDevice(apiMobileDevices);
                                 }
-                            }, function() {
+                            }, function(e) {
                                 platform.log('Error while getting mobile devices.');
+                                platform.log.debug(e);
                             });
                         }, platform.config.occupancyUpdateInterval * 1000);
-                    }, function() {
+                    }, function(e) {
                         platform.log('Error while getting mobile devices.');
+                        platform.log.debug(e);
                     }));
                 }
 
@@ -193,20 +197,23 @@ function TadoPlatform(log, config, api) {
                         // Initially updates the home
                         platform.client.getState(platform.home.id).then(function(apiState) {
                             platform.homeDevice.updateHomeDevice(apiState);
-                        }, function() {
+                        }, function(e) {
                             platform.log('Error while getting home.');
+                            platform.log.debug(e);
                         });
 
                         // Starts the timer for updating the home device
                         setInterval(function() {
                             platform.client.getState(platform.home.id).then(function(apiState) {
                                 platform.homeDevice.updateHomeDevice(apiState);
-                            }, function() {
+                            }, function(e) {
                                 platform.log('Error while getting home.');
+                                platform.log.debug(e);
                             });
                         }, platform.config.homeUpdateInterval * 1000);
-                    }, function() {
+                    }, function(e) {
                         platform.log('Error while getting home.');
+                        platform.log.debug(e);
                     }));
                 }
 
