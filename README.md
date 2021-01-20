@@ -47,6 +47,7 @@ npm install -g homebridge-tado-smart-thermostat
             "areOccupancySensorsEnabled": false,
             "isGlobalHomeAwayEnabled": false,
             "isAutoAssistEnabled": false,
+            "areWindowSensorsHidden": false,
             "switchToAutoInNextTimeBlock": false,
             "isAlternativeStateLogicEnabled": false,
             "zoneUpdateInterval": 3600,
@@ -79,6 +80,8 @@ npm install -g homebridge-tado-smart-thermostat
 **isGlobalHomeAwayEnabled** (optional): Determines whether the global Home/Away state is exposed as occupancy sensor with controls to HomeKit. Defaults to `false`.
 
 **isAutoAssistEnabled** (optional): Determines whether you have the Tado "Auto-Assist" for automatic geo-fencing booked and enabled. Only used when `isGlobalHomeAwayEnabled` is set to `true`. Defaults to `false`.
+
+**areWindowSensorsHidden** (optional): By default, windows sensors are shown if window detection is enabled for their zones. Use this settings to completely hide them. Defaults to `false`.
 
 **switchToAutoInNextTimeBlock** (optional): If set to `true`, the state of the zone is switch back to AUTO in the next time block of the time table (same behavior as the zone setting for manual changes on the device itself). Defaults to `false`.
 

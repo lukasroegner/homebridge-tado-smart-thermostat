@@ -98,7 +98,7 @@ function TadoHeatingZone(platform, apiZone) {
 
     // Updates the contact snesor service
     let contactSensorService = thermostatAccessory.getServiceByUUIDAndSubType(Service.ContactSensor);
-    if (apiZone.openWindowDetection && apiZone.openWindowDetection.supported && apiZone.openWindowDetection.enabled) {
+    if (apiZone.openWindowDetection && apiZone.openWindowDetection.supported && apiZone.openWindowDetection.enabled && !platform.config.areWindowSensorsHidden) {
         if (!contactSensorService) {
             contactSensorService = thermostatAccessory.addService(Service.ContactSensor);
         }

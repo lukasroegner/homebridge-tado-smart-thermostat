@@ -46,6 +46,12 @@
                 "default": false,
                 "description": "Determines whether you have the Tado 'Auto-Assist' for automatic geo-fencing booked and enabled. Only used when global Home/Away is enabled."
             },
+            "areWindowSensorsHidden": {
+                "title": "Window Sensors Hidden",
+                "type": "boolean",
+                "default": false,
+                "description": "By default, windows sensors are shown if window detection is enabled for their zones. Use this settings to completely hide them."
+            },
             "switchToAutoInNextTimeBlock": {
                 "title": "Auto in Next Time Block",
                 "type": "boolean",
