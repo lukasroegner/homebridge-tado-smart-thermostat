@@ -129,6 +129,11 @@ function TadoHeatingZone(platform, apiZone) {
         termination = terminationOption;
     }
 
+    // Defines the timeout handle for fixing a bug in the Home app: whenever the target state is set to AUTO, the target temperature is also set
+    // This is prevented by delaying changes of the TargetTemperature. If the TargetHeatingCoolingState characteristic is changed milliseconds after the TargetTemperature,
+    // it is detected and changing of the TargetTemperature won't be executed
+    let timeoutHandle = null;
+
     // Subscribes for changes of the target state characteristic
     thermostatService.getCharacteristic(Characteristic.TargetHeatingCoolingState).on('set', function (value, callback) {
 
@@ -158,6 +163,14 @@ function TadoHeatingZone(platform, apiZone) {
 
         // Sets the state to AUTO
         if (value === 3) {
+
+            // Checks if a timeout has been set, which has to be cleared
+            if (timeoutHandle) {
+                platform.log.debug(zone.id + ' - Switch target state to AUTO: setting target temperature cancelled');
+                clearTimeout(timeoutHandle);
+                timeoutHandle = null;
+            }
+
             platform.log.debug(zone.id + ' - Switch target state to AUTO');
             zone.platform.client.clearZoneOverlay(platform.home.id, zone.id).then(function() {
 
@@ -174,16 +187,20 @@ function TadoHeatingZone(platform, apiZone) {
 
     // Subscribes for changes of the target temperature characteristic
     thermostatService.getCharacteristic(Characteristic.TargetTemperature).on('set', function (value, callback) {
-
+    
         // Sets the target temperature
-        platform.log.debug(zone.id + ' - Set target temperature to ' + value);
-        zone.platform.client.setZoneOverlay(platform.home.id, zone.id, 'on', value, termination).then(function() {
+        platform.log.debug(zone.id + ' - Set target temperature to ' + value + ' with delay');
+        timeoutHandle = setTimeout(function () {
+            platform.log.debug(zone.id + ' - Set target temperature to ' + value);
+            zone.platform.client.setZoneOverlay(platform.home.id, zone.id, 'on', value, termination).then(function() {
 
-            // Updates the state
-            zone.updateState();
-        }, function() {
-            platform.log(zone.id + ' - Failed to set target temperature to ' + value);
-        });
+                // Updates the state
+                zone.updateState();
+            }, function() {
+                platform.log(zone.id + ' - Failed to set target temperature to ' + value);
+            });
+            timeoutHandle = null;
+        }, 250);
 
         // Performs the callback
         callback(null);
