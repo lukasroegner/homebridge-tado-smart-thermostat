@@ -143,6 +143,16 @@ TadoApi.prototype.handleGetPropertyByZone = function (endpoint, response) {
             response.statusCode = 200;
             response.end();
             return;
+        
+        case 'open-window':
+            if (apiZone.state.openWindow === true || apiZone.state.openWindow === false) {
+                response.write(apiZone.state.openWindow.toString());
+            } else {
+                response.write('null');
+            }
+            response.statusCode = 200;
+            response.end();
+            return;
     }
 
     // Writes the response
@@ -183,6 +193,7 @@ TadoApi.prototype.handleGetZone = function (endpoint, response) {
     } else {
         responseObject['target-temperature'] = null;
     }
+    responseObject['open-window'] = apiZone.state.openWindow;
     response.write(JSON.stringify(responseObject));
     response.statusCode = 200;
     response.end();
@@ -242,6 +253,10 @@ TadoApi.prototype.handlePostZone = function (endpoint, body, response) {
         
             case 'target-temperature':
                 promises.push(api.platform.client.setZoneOverlay(api.platform.home.id, apiZone.id, 'on', zonePropertyValue, api.platform.config.switchToAutoInNextTimeBlock ? 'auto' : 'manual'));
+                break;
+    
+            case 'open-window':
+                promises.push(api.platform.client.setOpenWindowMode(api.platform.home.id, apiZone.id, zonePropertyValue));
                 break;
         }
     }
