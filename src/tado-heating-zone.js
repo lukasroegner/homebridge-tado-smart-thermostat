@@ -61,11 +61,80 @@ function TadoHeatingZone(platform, apiZone) {
             .setCharacteristic(Characteristic.FirmwareRevision, zoneLeader.currentFwVersion);
     }
 
+    // Add, remove and update switches for each sensor in a zone
+    zone.sensors = []
+
+    for (let i = 0; i < platform.config.zones.length; i++) {
+        if (platform.config.zones[i].zoneId == zone.id) {
+
+            let currentSensors = [];
+            let newSensors = [];
+        
+            // Load all defined switches and store them temporarily to allow removal of switches
+            for (let i = 0; i < 10; i++) {
+                let subtype = 'sensor-' + i;
+                let switchService = thermostatAccessory.getServiceByUUIDAndSubType(Service.Switch, subtype);
+        
+                if (switchService) {
+                    currentSensors.push(switchService);
+                }
+            }
+
+            platform.log(zone.id + ' - Found sensor switches: ' + currentSensors.length);
+
+            // Apply the coonfig and try to match it against the exisiting switches
+            for (let s = 0; s < platform.config.zones[i].sensors.length; s++) {
+                let sensorConfig = platform.config.zones[i].sensors[s];
+
+                let subtype = 'sensor-' + s;
+                let sensorName = sensorConfig.name || 'Switch #' + (1 + s);
+
+                // Do we already have a switch for this? If so, remove it from the list and use it for processing
+                let sensorSwitch = currentSensors.find( item => (item.name == sensorName));
+                if (!sensorSwitch) {
+                    sensorSwitch = currentSensors.find( item => (item.subtype == subtype));
+                } 
+                currentSensors = currentSensors.filter( item => (item !== sensorSwitch));
+
+                if (!sensorSwitch) {
+                    platform.log(zone.id + ' - New sensor switch for ' + sensorName);
+
+                    sensorSwitch = new Service.Switch(sensorName, subtype);
+                    newSensors.push(sensorSwitch);
+                }            
+                else {
+                    platform.log(zone.id + ' - Sensor switch ' + sensorSwitch.subtype + ' already exists, updating.');
+                }
+
+                sensorSwitch.name = sensorName;
+                sensorSwitch.subtype = subtype;
+                sensorSwitch.isHiddenService = true;
+
+                sensorSwitch
+                    .updateCharacteristic(Characteristic.Name, sensorName); 
+
+                sensorSwitch
+                    .getCharacteristic(Characteristic.On)
+                    .on('set', zone.checkSensorState.bind(this, sensorSwitch));
+
+                zone.sensors.push(sensorSwitch);
+            }
+
+            platform.log(zone.id + ' - Removing outdated sensors ' + currentSensors.length);
+            currentSensors.forEach( sensor => thermostatAccessory.removeService(sensor));
+
+            platform.log(zone.id + ' - Adding new sensors ' + newSensors.length);
+            newSensors.forEach( sensor => thermostatAccessory.addService(sensor));
+        }
+    }
+    
     // Updates the thermostat service
     let thermostatService = thermostatAccessory.getServiceByUUIDAndSubType(Service.Thermostat);
     if (!thermostatService) {
         thermostatService = thermostatAccessory.addService(Service.Thermostat);
     }
+
+    thermostatService.isPrimaryService = true;
 
     // Disables cooling
     thermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).setProps({
@@ -209,12 +278,40 @@ function TadoHeatingZone(platform, apiZone) {
         // Performs the callback
         callback(null);
     });
-
+        
     // Sets the interval for the next update
     setInterval(function() { zone.updateState(); }, zone.platform.config.stateUpdateInterval * 1000);
 
     // Updates the state initially
     zone.updateState();
+}
+
+TadoHeatingZone.prototype.checkSensorState = function(switchService, value, callback) {
+    const zone = this;
+    const { Characteristic } = zone.platform;
+
+    switchService.isOpen = value; 
+
+    let openCount = 0;
+
+    for (var index in zone.sensors) {
+        var sensorSwitch = zone.sensors[index];
+
+        if (sensorSwitch.isOpen) {
+            openCount++;            
+        }
+    }
+
+    zone.platform.log.debug(zone.id + ' - Open door or window detected? = ' + openCount);
+
+    if (openCount == 0) {
+        zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, '3');
+    }
+    else {
+        zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, '0');
+    }
+
+    callback(null);
 }
 
 /**
