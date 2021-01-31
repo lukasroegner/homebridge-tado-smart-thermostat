@@ -6,7 +6,7 @@
  */
 function TadoHeatingZone(platform, apiZone) {
     const zone = this;
-    const { UUIDGen, Accessory, Characteristic, Service } = platform;
+    const { UUIDGen, Accessory, Characteristic, Service, Categories } = platform;
 
     // Sets the ID and platform
     zone.id = apiZone.id;
@@ -16,6 +16,26 @@ function TadoHeatingZone(platform, apiZone) {
     let unusedZoneAccessories = platform.accessories.filter(function(a) { return a.context.id === zone.id; });
     let newZoneAccessories = [];
     let zoneAccessories = [];
+    
+    // Check if the config asks for a separate accessory containing the sensors
+    let createSensorAccessory = false;
+    let sensorAccessoryName = apiZone.name + ' Sensors';
+    for (let i = 0; i < platform.config.zones.length; i++) {
+        if (platform.config.zones[i].zoneId == zone.id) {
+            platform.config.zones[i].sensors = platform.config.zones[i].sensors || [];
+
+            createSensorAccessory = (platform.config.zones[i].createSensorAccessory || false);
+            createSensorAccessory &= (platform.config.zones[i].sensors.length > 0);
+
+            if (createSensorAccessory && ((platform.config.zones[i].sensorAccessoryName || '') != '')) {
+                 sensorAccessoryName = platform.config.zones[i].sensorAccessoryName || sensorAccessoryName;
+            }
+
+            break;
+        }
+    }
+
+    platform.log('Zone ' + zone.id + ': Will ' + (createSensorAccessory ? '' : 'not ') + 'create separate sensor accessory');
 
     // Gets the thermostat accessory
     let thermostatAccessory = unusedZoneAccessories.find(function(a) { return a.context.kind === 'ThermostatAccessory'; });
@@ -28,7 +48,27 @@ function TadoHeatingZone(platform, apiZone) {
         thermostatAccessory.context.kind = 'ThermostatAccessory';
         newZoneAccessories.push(thermostatAccessory);
     }
+    thermostatAccessory.category = Categories.THERMOSTAT;
     zoneAccessories.push(thermostatAccessory);
+
+    // Gets the sensors accessory, if enabled in the config   
+    let sensorAccessory = thermostatAccessory;
+    let addZoneName = false;
+
+    if (createSensorAccessory) {
+        sensorAccessory = unusedZoneAccessories.find(function(a) { return a.context.kind === 'SensorAccessory'; });
+        addZoneName = true;
+        if (sensorAccessory) {
+            unusedZoneAccessories.splice(unusedZoneAccessories.indexOf(sensorAccessory), 1);
+        } else {
+            platform.log('Adding new accessory with zone ID ' + zone.id + ' and kind SensorAccessory.');
+            sensorAccessory = new Accessory(sensorAccessoryName, UUIDGen.generate(zone.id + 'SensorAccessory'));
+            sensorAccessory.context.id = zone.id;
+            sensorAccessory.context.kind = 'SensorAccessory';
+            newZoneAccessories.push(sensorAccessory);
+        }
+        zoneAccessories.push(sensorAccessory);
+    }
 
     // Registers the newly created accessories
     platform.api.registerPlatformAccessories(platform.pluginName, platform.platformName, newZoneAccessories);
@@ -62,8 +102,21 @@ function TadoHeatingZone(platform, apiZone) {
     }
 
     // Add, remove and update switches for each sensor in a zone
+    if (createSensorAccessory) {
+        // Remove any switches that probably existed before a separate accessory was selected
+        for (let i = 0; i < 10; i++) {
+            let subtype = 'sensor-' + i;
+            let switchService = thermostatAccessory.getServiceByUUIDAndSubType(Service.Switch, subtype);
+            
+            if (switchService) {
+                thermostatAccessory.removeService(switchService);
+            }
+        }
+    }
+    
+    platform.log('Configuring switches');
+    
     zone.sensors = []
-
     for (let i = 0; i < platform.config.zones.length; i++) {
         if (platform.config.zones[i].zoneId == zone.id) {
 
@@ -73,7 +126,7 @@ function TadoHeatingZone(platform, apiZone) {
             // Load all defined switches and store them temporarily to allow removal of switches
             for (let i = 0; i < 10; i++) {
                 let subtype = 'sensor-' + i;
-                let switchService = thermostatAccessory.getServiceByUUIDAndSubType(Service.Switch, subtype);
+                let switchService = sensorAccessory.getServiceByUUIDAndSubType(Service.Switch, subtype);
         
                 if (switchService) {
                     currentSensors.push(switchService);
@@ -87,7 +140,7 @@ function TadoHeatingZone(platform, apiZone) {
                 let sensorConfig = platform.config.zones[i].sensors[s];
 
                 let subtype = 'sensor-' + s;
-                let sensorName = sensorConfig.name || 'Switch #' + (1 + s);
+                let sensorName = (addZoneName ? sensorAccessory.displayName + ': ' : '') + sensorConfig.name || 'Switch #' + (1 + s);
 
                 // Do we already have a switch for this? If so, remove it from the list and use it for processing
                 let sensorSwitch = currentSensors.find( item => (item.name == sensorName));
@@ -108,7 +161,7 @@ function TadoHeatingZone(platform, apiZone) {
 
                 sensorSwitch.name = sensorName;
                 sensorSwitch.subtype = subtype;
-                sensorSwitch.isHiddenService = true;
+                sensorSwitch.isHiddenService = !createSensorAccessory;
 
                 sensorSwitch
                     .updateCharacteristic(Characteristic.Name, sensorName); 
@@ -120,11 +173,11 @@ function TadoHeatingZone(platform, apiZone) {
                 zone.sensors.push(sensorSwitch);
             }
 
-            platform.log(zone.id + ' - Removing outdated sensors ' + currentSensors.length);
-            currentSensors.forEach( sensor => thermostatAccessory.removeService(sensor));
+            platform.log(zone.id + ' - Removing outdated sensors from accessory with kind ' + sensorAccessory.context.kind + ' (' + + currentSensors.length + ')');
+            currentSensors.forEach( sensor => sensorAccessory.removeService(sensor));
 
-            platform.log(zone.id + ' - Adding new sensors ' + newSensors.length);
-            newSensors.forEach( sensor => thermostatAccessory.addService(sensor));
+            platform.log(zone.id + ' - Adding new sensors to accessory with kind ' + sensorAccessory.context.kind + ' (' + newSensors.length + ')');
+            newSensors.forEach( sensor => sensorAccessory.addService(sensor));
         }
     }
     
