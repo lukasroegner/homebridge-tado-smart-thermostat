@@ -114,7 +114,7 @@ npm install -g homebridge-tado-smart-thermostat
 
 **zones.sensors** (optional): Defines virtual switches that control if the heating in the zone is off (at least switch is on) or if zone is in auto mode (all switches are off). A name can be assigned to distinguish multiple sensors. This is intended to link sensors or arbitrary actions to the switches.
 
-**createSensorAccessory** (optional): Will create a separate accessory carrying the sensor switches. This allows to keep the thermostat accessory free from clutter needed for automation. Typically, these accessories would be stored in another room to be hidden. The additional accessory wull be named like the thermostat accessory with the word 'Sensors' as suffix. This can be overwritten with the **sensorAccessoryName** parameter.
+**createSensorAccessory** (optional): Will create a separate accessory carrying the sensor switches. This allows to keep the thermostat accessory free from clutter needed for automation. Typically, these accessories would be stored in another room to be hidden. The additional accessory will be named like the thermostat accessory with the word 'Sensors' as suffix. This can be overwritten with the **sensorAccessoryName** parameter.
 
 **sensorAccessoryName** (optional): Alternative name for the created sensor accessory. 
 
