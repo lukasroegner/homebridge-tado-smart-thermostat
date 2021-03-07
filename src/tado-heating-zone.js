@@ -39,6 +39,7 @@ function TadoHeatingZone(platform, apiZone) {
 
     // Gets the thermostat accessory
     let thermostatAccessory = unusedZoneAccessories.find(function(a) { return a.context.kind === 'ThermostatAccessory'; });
+    thermostatAccessory.displayName = apiZone.name;
     if (thermostatAccessory) {
         unusedZoneAccessories.splice(unusedZoneAccessories.indexOf(thermostatAccessory), 1);
     } else {
@@ -57,6 +58,7 @@ function TadoHeatingZone(platform, apiZone) {
 
     if (createSensorAccessory) {
         sensorAccessory = unusedZoneAccessories.find(function(a) { return a.context.kind === 'SensorAccessory'; });
+        sensorAccessory.displayName = sensorAccessoryName;
         addZoneName = true;
         if (sensorAccessory) {
             unusedZoneAccessories.splice(unusedZoneAccessories.indexOf(sensorAccessory), 1);
@@ -140,7 +142,7 @@ function TadoHeatingZone(platform, apiZone) {
                 let sensorConfig = platform.config.zones[i].sensors[s];
 
                 let subtype = 'sensor-' + s;
-                let sensorName = (addZoneName ? sensorAccessory.displayName + ': ' : '') + sensorConfig.name || 'Switch #' + (1 + s);
+                let sensorName = (addZoneName ? sensorAccessoryName + ': ' : '') + sensorConfig.name || 'Switch #' + (1 + s);
 
                 // Do we already have a switch for this? If so, remove it from the list and use it for processing
                 let sensorSwitch = currentSensors.find( item => (item.name == sensorName));
@@ -188,6 +190,7 @@ function TadoHeatingZone(platform, apiZone) {
     }
 
     thermostatService.isPrimaryService = true;
+    thermostatService.switchOpen = thermostatService.switchOpen || false;
 
     // Disables cooling
     thermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).setProps({
@@ -358,13 +361,16 @@ TadoHeatingZone.prototype.checkSensorState = function(switchService, value, call
     zone.platform.log.debug(zone.id + ' - Open door or window detected? = ' + openCount);
 
     if (openCount == 0) {
-        zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, '3');
+        zone.thermostatService.switchOpen = false;
     }
     else {
-        zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, '0');
+        zone.thermostatService.switchOpen = true;
     }
-
+    
     callback(null);
+
+    // Updates the state
+    zone.updateState();
 }
 
 /**
@@ -382,13 +388,17 @@ TadoHeatingZone.prototype.updateState = function () {
         // Updates the current state
         zone.thermostatService.updateCharacteristic(Characteristic.CurrentHeatingCoolingState, state.setting.power === 'ON' && state.activityDataPoints.heatingPower && state.activityDataPoints.heatingPower.percentage > 0 ? 1 : 0);
         
-        // Updates the target state
-        if (zone.platform.config.isAlternativeStateLogicEnabled) {
-            zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, state.setting.power === 'ON' ? (!state.overlayType ? 3 : 1) : 0);
-        } else {
-            zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, !state.overlayType ? 3 : (state.setting.power === 'ON' ? 1 : 0));
+        if (zone.thermostatService.switchOpen) {
+            zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, state.setting.power === 'ON' ? 0 : 3);
         }
-        
+        else {
+            if (zone.platform.config.isAlternativeStateLogicEnabled) {
+                zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, state.setting.power === 'ON' ? (!state.overlayType ? 3 : 1) : 0);
+            } else {
+                zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, !state.overlayType ? 3 : (state.setting.power === 'ON' ? 1 : 0));
+            }
+        }
+
         // Updates the temperatures
         zone.thermostatService.updateCharacteristic(Characteristic.CurrentTemperature, state.sensorDataPoints.insideTemperature.celsius);
         if (state.setting.temperature) {
