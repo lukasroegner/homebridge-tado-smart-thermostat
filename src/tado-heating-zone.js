@@ -6,7 +6,7 @@
  */
 function TadoHeatingZone(platform, apiZone) {
     const zone = this;
-    const { UUIDGen, Accessory, Characteristic, Service } = platform;
+    const { UUIDGen, Accessory, Characteristic, Service, Categories } = platform;
 
     // Sets the ID and platform
     zone.id = apiZone.id;
@@ -16,9 +16,30 @@ function TadoHeatingZone(platform, apiZone) {
     let unusedZoneAccessories = platform.accessories.filter(function(a) { return a.context.id === zone.id; });
     let newZoneAccessories = [];
     let zoneAccessories = [];
+    
+    // Check if the config asks for a separate accessory containing the sensors
+    let createSensorAccessory = false;
+    let sensorAccessoryName = apiZone.name + ' Sensors';
+    for (let i = 0; i < platform.config.zones.length; i++) {
+        if (platform.config.zones[i].zoneId == zone.id) {
+            platform.config.zones[i].sensors = platform.config.zones[i].sensors || [];
+
+            createSensorAccessory = (platform.config.zones[i].createSensorAccessory || false);
+            createSensorAccessory &= (platform.config.zones[i].sensors.length > 0);
+
+            if (createSensorAccessory && ((platform.config.zones[i].sensorAccessoryName || '') != '')) {
+                 sensorAccessoryName = platform.config.zones[i].sensorAccessoryName || sensorAccessoryName;
+            }
+
+            break;
+        }
+    }
+
+    platform.log('Zone ' + zone.id + ': Will ' + (createSensorAccessory ? '' : 'not ') + 'create separate sensor accessory');
 
     // Gets the thermostat accessory
     let thermostatAccessory = unusedZoneAccessories.find(function(a) { return a.context.kind === 'ThermostatAccessory'; });
+    thermostatAccessory.displayName = apiZone.name;
     if (thermostatAccessory) {
         unusedZoneAccessories.splice(unusedZoneAccessories.indexOf(thermostatAccessory), 1);
     } else {
@@ -28,7 +49,28 @@ function TadoHeatingZone(platform, apiZone) {
         thermostatAccessory.context.kind = 'ThermostatAccessory';
         newZoneAccessories.push(thermostatAccessory);
     }
+    thermostatAccessory.category = Categories.THERMOSTAT;
     zoneAccessories.push(thermostatAccessory);
+
+    // Gets the sensors accessory, if enabled in the config   
+    let sensorAccessory = thermostatAccessory;
+    let addZoneName = false;
+
+    if (createSensorAccessory) {
+        sensorAccessory = unusedZoneAccessories.find(function(a) { return a.context.kind === 'SensorAccessory'; });
+        sensorAccessory.displayName = sensorAccessoryName;
+        addZoneName = true;
+        if (sensorAccessory) {
+            unusedZoneAccessories.splice(unusedZoneAccessories.indexOf(sensorAccessory), 1);
+        } else {
+            platform.log('Adding new accessory with zone ID ' + zone.id + ' and kind SensorAccessory.');
+            sensorAccessory = new Accessory(sensorAccessoryName, UUIDGen.generate(zone.id + 'SensorAccessory'));
+            sensorAccessory.context.id = zone.id;
+            sensorAccessory.context.kind = 'SensorAccessory';
+            newZoneAccessories.push(sensorAccessory);
+        }
+        zoneAccessories.push(sensorAccessory);
+    }
 
     // Registers the newly created accessories
     platform.api.registerPlatformAccessories(platform.pluginName, platform.platformName, newZoneAccessories);
@@ -61,11 +103,94 @@ function TadoHeatingZone(platform, apiZone) {
             .setCharacteristic(Characteristic.FirmwareRevision, zoneLeader.currentFwVersion);
     }
 
+    // Add, remove and update switches for each sensor in a zone
+    if (createSensorAccessory) {
+        // Remove any switches that probably existed before a separate accessory was selected
+        for (let i = 0; i < 10; i++) {
+            let subtype = 'sensor-' + i;
+            let switchService = thermostatAccessory.getServiceByUUIDAndSubType(Service.Switch, subtype);
+            
+            if (switchService) {
+                thermostatAccessory.removeService(switchService);
+            }
+        }
+    }
+    
+    platform.log('Configuring switches');
+    
+    zone.sensors = []
+    for (let i = 0; i < platform.config.zones.length; i++) {
+        if (platform.config.zones[i].zoneId == zone.id) {
+
+            let currentSensors = [];
+            let newSensors = [];
+        
+            // Load all defined switches and store them temporarily to allow removal of switches
+            for (let i = 0; i < 10; i++) {
+                let subtype = 'sensor-' + i;
+                let switchService = sensorAccessory.getServiceByUUIDAndSubType(Service.Switch, subtype);
+        
+                if (switchService) {
+                    currentSensors.push(switchService);
+                }
+            }
+
+            platform.log(zone.id + ' - Found sensor switches: ' + currentSensors.length);
+
+            // Apply the coonfig and try to match it against the exisiting switches
+            for (let s = 0; s < platform.config.zones[i].sensors.length; s++) {
+                let sensorConfig = platform.config.zones[i].sensors[s];
+
+                let subtype = 'sensor-' + s;
+                let sensorName = (addZoneName ? sensorAccessoryName + ': ' : '') + sensorConfig.name || 'Switch #' + (1 + s);
+
+                // Do we already have a switch for this? If so, remove it from the list and use it for processing
+                let sensorSwitch = currentSensors.find( item => (item.name == sensorName));
+                if (!sensorSwitch) {
+                    sensorSwitch = currentSensors.find( item => (item.subtype == subtype));
+                } 
+                currentSensors = currentSensors.filter( item => (item !== sensorSwitch));
+
+                if (!sensorSwitch) {
+                    platform.log(zone.id + ' - New sensor switch for ' + sensorName);
+
+                    sensorSwitch = new Service.Switch(sensorName, subtype);
+                    newSensors.push(sensorSwitch);
+                }            
+                else {
+                    platform.log(zone.id + ' - Sensor switch ' + sensorSwitch.subtype + ' already exists, updating.');
+                }
+
+                sensorSwitch.name = sensorName;
+                sensorSwitch.subtype = subtype;
+                sensorSwitch.isHiddenService = !createSensorAccessory;
+
+                sensorSwitch
+                    .updateCharacteristic(Characteristic.Name, sensorName); 
+
+                sensorSwitch
+                    .getCharacteristic(Characteristic.On)
+                    .on('set', zone.checkSensorState.bind(this, sensorSwitch));
+
+                zone.sensors.push(sensorSwitch);
+            }
+
+            platform.log(zone.id + ' - Removing outdated sensors from accessory with kind ' + sensorAccessory.context.kind + ' (' + + currentSensors.length + ')');
+            currentSensors.forEach( sensor => sensorAccessory.removeService(sensor));
+
+            platform.log(zone.id + ' - Adding new sensors to accessory with kind ' + sensorAccessory.context.kind + ' (' + newSensors.length + ')');
+            newSensors.forEach( sensor => sensorAccessory.addService(sensor));
+        }
+    }
+    
     // Updates the thermostat service
     let thermostatService = thermostatAccessory.getServiceByUUIDAndSubType(Service.Thermostat);
     if (!thermostatService) {
         thermostatService = thermostatAccessory.addService(Service.Thermostat);
     }
+
+    thermostatService.isPrimaryService = true;
+    thermostatService.switchOpen = thermostatService.switchOpen || false;
 
     // Disables cooling
     thermostatService.getCharacteristic(Characteristic.CurrentHeatingCoolingState).setProps({
@@ -209,11 +334,42 @@ function TadoHeatingZone(platform, apiZone) {
         // Performs the callback
         callback(null);
     });
-
+        
     // Sets the interval for the next update
     setInterval(function() { zone.updateState(); }, zone.platform.config.stateUpdateInterval * 1000);
 
     // Updates the state initially
+    zone.updateState();
+}
+
+TadoHeatingZone.prototype.checkSensorState = function(switchService, value, callback) {
+    const zone = this;
+    const { Characteristic } = zone.platform;
+
+    switchService.isOpen = value; 
+
+    let openCount = 0;
+
+    for (var index in zone.sensors) {
+        var sensorSwitch = zone.sensors[index];
+
+        if (sensorSwitch.isOpen) {
+            openCount++;            
+        }
+    }
+
+    zone.platform.log.debug(zone.id + ' - Open door or window detected? = ' + openCount);
+
+    if (openCount == 0) {
+        zone.thermostatService.switchOpen = false;
+    }
+    else {
+        zone.thermostatService.switchOpen = true;
+    }
+    
+    callback(null);
+
+    // Updates the state
     zone.updateState();
 }
 
@@ -232,13 +388,17 @@ TadoHeatingZone.prototype.updateState = function () {
         // Updates the current state
         zone.thermostatService.updateCharacteristic(Characteristic.CurrentHeatingCoolingState, state.setting.power === 'ON' && state.activityDataPoints.heatingPower && state.activityDataPoints.heatingPower.percentage > 0 ? 1 : 0);
         
-        // Updates the target state
-        if (zone.platform.config.isAlternativeStateLogicEnabled) {
-            zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, state.setting.power === 'ON' ? (!state.overlayType ? 3 : 1) : 0);
-        } else {
-            zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, !state.overlayType ? 3 : (state.setting.power === 'ON' ? 1 : 0));
+        if (zone.thermostatService.switchOpen) {
+            zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, state.setting.power === 'ON' ? 0 : 3);
         }
-        
+        else {
+            if (zone.platform.config.isAlternativeStateLogicEnabled) {
+                zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, state.setting.power === 'ON' ? (!state.overlayType ? 3 : 1) : 0);
+            } else {
+                zone.thermostatService.updateCharacteristic(Characteristic.TargetHeatingCoolingState, !state.overlayType ? 3 : (state.setting.power === 'ON' ? 1 : 0));
+            }
+        }
+
         // Updates the temperatures
         zone.thermostatService.updateCharacteristic(Characteristic.CurrentTemperature, state.sensorDataPoints.insideTemperature.celsius);
         if (state.setting.temperature) {

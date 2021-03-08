@@ -128,6 +128,38 @@
                             "title": "Terminal Option",
                             "type": "string",
                             "description": "Can be 'auto', 'manual' or a number representing the number of minutes for the timer."
+                        },
+                        "createSensorAccessory": {
+                            "title": "Create Accessory for Sensors",
+                            "type": "boolean",
+                            "description": "If enabled, a separate accessory is created containing the switches for the sensors of this zone.",
+                            "condition": {
+                                "functionBody":"try { return (model.zones[arrayIndices[0]].sensors.length > 0); } catch(e){return false;}"
+                            }                            
+                        },
+                        "sensorAccessoryName": {
+                            "title": "Alternative Name for Sensor Accessory",
+                            "type": "string",
+                            "description": "Used instead of the automatically created accessory name.",
+                            "condition": {
+                                "functionBody":"try { return (model.zones[arrayIndices[0]].createSensorAccessory || false); } catch(e){return false;}"
+                            }                            
+                        },
+                        "sensors" : {
+                            "type": "array",
+                            "items": {
+                                "title": "Sensor",
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "title": "Sensor Name",
+                                        "type": "string",
+                                        "required": false,
+                                        "default": "SENSOR-NAME",
+                                        "description": "Useful to identify individual zone buttons."
+                                    }
+                                }
+                            }
                         }
                     }
                 }

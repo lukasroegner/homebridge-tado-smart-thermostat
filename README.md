@@ -14,6 +14,7 @@ Each zone in the Tado app is exposed to HomeKit as a thermostat with the followi
 * Current humidity
 * Battery warning
 * Window state: CLOSED, OPEN (only visible if the open window detection is enabled for the zone)
+* Optional switches to be controlled by opening sensors that control heating in the zone
 
 ## Hotwater
 
@@ -61,7 +62,15 @@ npm install -g homebridge-tado-smart-thermostat
                 {
                     "zoneId": <YOUR-ZONE-ID>,
                     "zoneName": "<YOUR-ZONE-NAME>",
-                    "terminationOption": "auto"
+                    "terminationOption": "auto",
+                    "sensors": [
+                        {
+                            "name": "Left Window"
+                        },
+                        {
+                            "name": "Right Window"
+                        }
+                    ]
                 }
             ]
         }
@@ -102,6 +111,12 @@ npm install -g homebridge-tado-smart-thermostat
 **apiToken** (optional): The token that has to be included in each request of the API. Is required if the API is enabled and has no default value.
 
 **zones** (optional): If you wish to override the default termination (until next automatic change, until cancelled by user or a timer) for a particular zone, add each zone by ID (IDs are printed in the log during Homebridge startup) with terminationOption of "auto", "manual" or the number of minutes the change should last. Zone Name is purely for readability.
+
+**zones.sensors** (optional): Defines virtual switches that control if the heating in the zone is off (at least switch is on) or if zone is in auto mode (all switches are off). A name can be assigned to distinguish multiple sensors. This is intended to link sensors or arbitrary actions to the switches.
+
+**createSensorAccessory** (optional): Will create a separate accessory carrying the sensor switches. This allows to keep the thermostat accessory free from clutter needed for automation. Typically, these accessories would be stored in another room to be hidden. The additional accessory will be named like the thermostat accessory with the word 'Sensors' as suffix. This can be overwritten with the **sensorAccessoryName** parameter.
+
+**sensorAccessoryName** (optional): Alternative name for the created sensor accessory. 
 
 ## API
 
