@@ -1,5 +1,11 @@
 # homebridge-tado-smart-thermostat
 
+## ⚠️ Deprecation notice - plugin archived
+
+Due to lack of time, this plugin will no longer be maintained. If you are locking for an alternative, I would highly suggest to try out [homebridge-tado-platform](https://github.com/SeydX/homebridge-tado-platform), which has a huge feature set, support for Config UI X and much more.
+
+## About
+
 This project is a homebridge plugin for Tado heating devices. Each zone (i.e. room) in the Tado app is exposed to HomeKit as a thermostat.
 
 The reason for development of the plugin is that the native Tado HomeKit support does not differentiate between AUTO mode and MANUAL mode. If you change the target temperature in HomeKit, Tado always switches to MANUAL mode. 
